@@ -1,15 +1,44 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, Modal, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import UserPage from './UserPage';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 
 export default function HomePage({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
-    const numbers = [1, 2, 3, 4, 5];
+    const [data, setData] = useState([]);
+    const [isloading, loading] = useState(true);
+    const [deleteUserId, setDeleteUserId] = useState("");
+
+    const getUserData = async() => {
+        loading(true)
+        await fetch('http://localhost:3000/api/view', {
+            method: 'GET',
+        }).then((response) => response.json()).then((responseJson) => {
+            setData(responseJson)
+            console.log(responseJson)
+        }).catch((error) => {
+            console.error(error);
+        }).finally(() => loading(false))
+    };
+
+    const deleteUser = async() => {
+        await fetch('http://localhost:3000/api//delete/'+deleteUserId, {
+            method: 'DELETE',
+        }).then((response) => response.json()).then((responseJson) => {
+            console.log(responseJson)
+        }).catch((error) => {
+            console.error(error);
+        }).finally(() => {loading(false);setModalVisible(!modalVisible);getUserData()})
+    }
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            getUserData();
+        });
+        return unsubscribe;
+    }, [navigation]);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
@@ -17,21 +46,22 @@ export default function HomePage({ navigation }) {
                 <Button
                     style={styles.newuserbtn}
                     title="Add New User"
-                    color="#841584" 
-                    onPress={() =>  navigation.navigate('User')}
-                    />
-                {numbers.map((d, index) => (
-                    // <li key={d.title}>{d.title}</li>
-                    <View key={index} style={styles.card}>
-                        <View style={styles.cardContent}>
-                            <Text style={styles.userName}>{d}</Text>
-                            <TouchableOpacity style={styles.actionBtn}>
-                                <Ionicons style={styles.editBtn} name="md-pencil" size={15} color="#fff" onPress={() => { setModalVisible(!modalVisible); }} />
-                                <Ionicons style={styles.deleteBtn} name="md-trash-bin" size={16} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                ))}
+                    color="#841584"
+                    onPress={() => navigation.navigate('User', { isEdit: false })}
+                />
+                {
+                    isloading ? <Text>Loading...</Text> :
+                        data.map((d, index) => (
+                            <View key={d._id} style={styles.card}>
+                                <View style={styles.cardContent}>
+                                    <Text style={styles.userName}>{index + 1}.  {d.name}  (age {d.age})</Text>
+                                    <TouchableOpacity style={styles.actionBtn}>
+                                        <Ionicons style={styles.editBtn} name="md-pencil" size={15} color="#fff" onPress={() => { navigation.navigate('User', { data: d, isEdit: true }) }} />
+                                        <Ionicons onPress={() => {setModalVisible(true);setDeleteUserId(d._id)}} style={styles.deleteBtn} name="md-trash-bin" size={16} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ))}
             </View>
             <StatusBar style="auto" />
 
@@ -39,7 +69,7 @@ export default function HomePage({ navigation }) {
             <View style={styles.centeredView}>
                 <Modal
                     animationType="fade"
-                    transparent={true}
+                    transparent={false}
                     visible={modalVisible}
                     onRequestClose={() => {
                         Alert.alert("Modal has been closed.");
@@ -48,22 +78,24 @@ export default function HomePage({ navigation }) {
                 >
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Text style={styles.modalText}>Hello World!</Text>
+                            <Text style={styles.modalText}>Are You Sure Want to Delete User ?</Text>
+                            <View style={styles.modelBtn}>
                             <Pressable
                                 style={[styles.button, styles.buttonClose]}
                                 onPress={() => setModalVisible(!modalVisible)}
                             >
-                                <Text style={styles.textStyle}>Hide Modal</Text>
+                                <Text style={styles.textStyle}>Cancel</Text>
                             </Pressable>
+                            <Pressable
+                                style={[styles.button, styles.buttonDelete]}
+                                onPress={() => deleteUser()}
+                            >
+                                <Text style={styles.textStyle}>Delete</Text>
+                            </Pressable>
+                            </View>
                         </View>
                     </View>
                 </Modal>
-                <Pressable
-                    style={[styles.button, styles.buttonOpen]}
-                    onPress={() => setModalVisible(true)}
-                >
-                    <Text style={styles.textStyle}>Show Modal</Text>
-                </Pressable>
             </View>
 
 
@@ -131,9 +163,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
+        marginTop: 22,
     },
     modalView: {
+        width: "80%",
         margin: 20,
         backgroundColor: "white",
         borderRadius: 20,
@@ -153,11 +186,9 @@ const styles = StyleSheet.create({
         padding: 10,
         elevation: 2
     },
-    buttonOpen: {
-        backgroundColor: "#F194FF",
-    },
     buttonClose: {
-        backgroundColor: "#2196F3",
+        backgroundColor: "#bbbbbb",
+        margin: 5,
     },
     textStyle: {
         color: "white",
@@ -167,6 +198,14 @@ const styles = StyleSheet.create({
     modalText: {
         marginBottom: 15,
         textAlign: "center"
-    }
-
+    },
+    modelBtn:{
+        justifyContent: 'space-between',
+        flexDirection: "row",
+        flexWrap: "wrap",
+    },
+    buttonDelete:{
+        backgroundColor: '#fe6666',
+        margin: 5,
+    },
 });
