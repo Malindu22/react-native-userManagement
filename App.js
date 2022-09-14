@@ -4,14 +4,18 @@ import HomePage from './component/HomePage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import UserPage from './component/UserPage';
+import LoginPage from './component/LoginPage';
+import Register from './component/Register';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
       // <HomePage/>
       <NavigationContainer>
-       <Stack.Navigator initialRouteName="Home">
-         <Stack.Screen name="Home" component={HomePage} />
+       <Stack.Navigator initialRouteName="Login">
+         <Stack.Screen options={{headerShown: false}} name="Login" component={LoginPage} />
+         <Stack.Screen options={{headerShown: false}} name="Register" component={Register} />
+         <Stack.Screen options={{headerBackVisible: false,headerLeft: () => {}}} name="Home" component={HomePage} />
          <Stack.Screen name="User" component={UserPage} />
        </Stack.Navigator>
       </NavigationContainer>
