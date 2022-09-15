@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
 import { NavigationContainer, useRoute } from '@react-navigation/native';
 import { RadioButton } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function UserPage({ navigation }) {
     const [text, onChangeText] = useState("");
@@ -10,10 +11,11 @@ export default function UserPage({ navigation }) {
     const [checked, setChecked] = useState('male');
     const [btnText, setBtnText] = useState('add');
     const [isloading, loading] = useState(false);
+    const [token, setToken] = useState("");
 
     const route = useRoute()
 
-    const saveChanges = async() => {
+    const saveChanges = async () => {
         loading(true)
         let Userdata = {
             name: text,
@@ -23,20 +25,32 @@ export default function UserPage({ navigation }) {
         let url = 'http://192.168.1.31:3000/api/add';
         let reqMethod = "POST"
         if (route.params.isEdit) {
-            url = 'http://192.168.1.31:3000/api/update/'+route.params.data._id
+            url = 'http://192.168.1.31:3000/api/update/' + route.params.data._id
             reqMethod = "PATCH"
         }
         await fetch(url, {
             method: reqMethod,
-            headers:{'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json', 'x-access-token': token },
             body: JSON.stringify(Userdata)
         }).then((response) => response.json()).then((responseJson) => {
             console.log(responseJson)
             navigation.navigate('Home')
         }).catch((error) => {
             console.error(error);
-        }).finally(()=> loading(false))
+        }).finally(() => loading(false))
     }
+
+    const getToken = async () => {
+        try {
+            const value = await AsyncStorage.getItem("TOKEN");
+            console.log("token",value)
+            if (value !== null) {
+                setToken(value)
+            }
+        } catch (e) {
+            console.log("get token err")
+        }
+    };
 
 
     useEffect(() => {
@@ -46,6 +60,7 @@ export default function UserPage({ navigation }) {
             setChecked(route.params.data.gender == "Male" ? 'male' : 'female')
             setBtnText(route.params.isEdit ? "Edit" : "Add")
         }
+        getToken()
     }, []);
 
 

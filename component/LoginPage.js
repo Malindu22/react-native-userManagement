@@ -1,29 +1,44 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthContext from './AuthContext';
 
 export default function Login({ navigation }) {
     const [text, onChangeText] = useState("");
     const [password, onChangePassword] = useState("");
     const [isloading, loading] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
+    const [token, setToken] = useState("");
+
+    const { isAuth, setAuth } = React.useContext(AuthContext);
 
     useEffect(() => {
-        // navigation.navigate('Home')
-    }, []);
+        saveTokenData()
+    }, [token]);
 
     const login = () => {
         if (text == '' || password == '') {
-            setError('Some Field are Empty..') 
+            setError('Some Field are Empty..')
             return;
-        }else{
-            setError('') 
+        } else {
+            setError('')
             loginUser()
         }
     }
 
-    const loginUser = async() => {
+    const saveTokenData = async () => {
+        if (token == '') { return; }
+        try {
+            await AsyncStorage.setItem('TOKEN', token)
+            setAuth(true)
+            console.log("save Token");
+        } catch (e) {
+            console.log("fail save token", e);
+        }
+    }
+
+    const loginUser = async () => {
         loading(true)
         let Userdata = {
             email: text,
@@ -31,10 +46,13 @@ export default function Login({ navigation }) {
         }
         await fetch('http://192.168.1.31:3000/api/login', {
             method: 'POST',
-            headers:{'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Userdata)
         }).then((response) => response.json()).then((responseJson) => {
-            console.log(responseJson)
+            if (responseJson.status) {
+                setToken(responseJson.token)
+                console.log("token: ",token)
+            }
         }).catch((error) => {
             console.error(error);
         }).finally(() => loading(false))
@@ -57,7 +75,7 @@ export default function Login({ navigation }) {
                         value={password}
                         placeholder="Password"
                     />
-                    <Text style={styles.errMsg}>{ error }</Text>
+                    <Text style={styles.errMsg}>{error}</Text>
                     <View style={styles.loginBtn}>
                         {
                             isloading ? <ActivityIndicator size="small" color="#841584" /> :
@@ -114,7 +132,7 @@ const styles = StyleSheet.create({
     clickBtn: {
         color: "#841584"
     },
-    errMsg:{
+    errMsg: {
         margin: 5,
         marginLeft: 10,
         fontSize: 13,

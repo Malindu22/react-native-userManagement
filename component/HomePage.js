@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, Modal, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default function HomePage({ navigation }) {
@@ -9,11 +10,13 @@ export default function HomePage({ navigation }) {
     const [data, setData] = useState([]);
     const [isloading, loading] = useState(true);
     const [deleteUserId, setDeleteUserId] = useState("");
+    const [token, setToken] = useState("");
 
-    const getUserData = async() => {
+    const getUserData = async () => {
         loading(true)
         await fetch('http://192.168.1.31:3000/api/view', {
             method: 'GET',
+            headers: { 'x-access-token': token },
         }).then((response) => response.json()).then((responseJson) => {
             setData(responseJson)
             console.log(responseJson)
@@ -22,22 +25,42 @@ export default function HomePage({ navigation }) {
         }).finally(() => loading(false))
     };
 
-    const deleteUser = async() => {
-        await fetch('http://192.168.1.31:3000/api/delete/'+deleteUserId, {
+    const deleteUser = async () => {
+        await fetch('http://192.168.1.31:3000/api/delete/' + deleteUserId, {
             method: 'DELETE',
+            headers: { 'x-access-token': token },
         }).then((response) => response.json()).then((responseJson) => {
             console.log(responseJson)
         }).catch((error) => {
             console.error(error);
-        }).finally(() => {loading(false);setModalVisible(!modalVisible);getUserData()})
+        }).finally(() => { loading(false); setModalVisible(!modalVisible); getUserData() })
     }
 
+    const getToken = async () => {
+        try {
+            const value = await AsyncStorage.getItem("TOKEN");
+            console.log("token",value)
+            if (value !== null) {
+                setToken(value)
+            }
+        } catch (e) {
+            console.log("get token err")
+        }
+    };
+
+    // useEffect(() => {
+    //     const unsubscribe = navigation.addListener('focus', () => {
+    //         getToken();
+    //         getUserData();
+    //     });
+    //     return unsubscribe;
+    // }, [navigation]);
+
     useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            getUserData();
-        });
-        return unsubscribe;
-    }, [navigation]);
+        console.log('user')
+        getToken();
+        getUserData();
+    }, [token]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -57,7 +80,7 @@ export default function HomePage({ navigation }) {
                                     <Text style={styles.userName}>{index + 1}.  {d.name}  (age {d.age})</Text>
                                     <TouchableOpacity style={styles.actionBtn}>
                                         <Ionicons style={styles.editBtn} name="md-pencil" size={15} color="#fff" onPress={() => { navigation.navigate('User', { data: d, isEdit: true }) }} />
-                                        <Ionicons onPress={() => {setModalVisible(true);setDeleteUserId(d._id)}} style={styles.deleteBtn} name="md-trash-bin" size={16} color="#fff" />
+                                        <Ionicons onPress={() => { setModalVisible(true); setDeleteUserId(d._id) }} style={styles.deleteBtn} name="md-trash-bin" size={16} color="#fff" />
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -80,18 +103,18 @@ export default function HomePage({ navigation }) {
                         <View style={styles.modalView}>
                             <Text style={styles.modalText}>Are You Sure Want to Delete User ?</Text>
                             <View style={styles.modelBtn}>
-                            <Pressable
-                                style={[styles.button, styles.buttonClose]}
-                                onPress={() => setModalVisible(!modalVisible)}
-                            >
-                                <Text style={styles.textStyle}>Cancel</Text>
-                            </Pressable>
-                            <Pressable
-                                style={[styles.button, styles.buttonDelete]}
-                                onPress={() => deleteUser()}
-                            >
-                                <Text style={styles.textStyle}>Delete</Text>
-                            </Pressable>
+                                <Pressable
+                                    style={[styles.button, styles.buttonClose]}
+                                    onPress={() => setModalVisible(!modalVisible)}
+                                >
+                                    <Text style={styles.textStyle}>Cancel</Text>
+                                </Pressable>
+                                <Pressable
+                                    style={[styles.button, styles.buttonDelete]}
+                                    onPress={() => deleteUser()}
+                                >
+                                    <Text style={styles.textStyle}>Delete</Text>
+                                </Pressable>
                             </View>
                         </View>
                     </View>
@@ -199,12 +222,12 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         textAlign: "center"
     },
-    modelBtn:{
+    modelBtn: {
         justifyContent: 'space-between',
         flexDirection: "row",
         flexWrap: "wrap",
     },
-    buttonDelete:{
+    buttonDelete: {
         backgroundColor: '#fe6666',
         margin: 5,
     },
