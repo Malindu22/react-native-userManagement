@@ -19,8 +19,25 @@ export default function Login({ navigation }) {
             return;
         }else{
             setError('') 
-            console.log("login")
+            loginUser()
         }
+    }
+
+    const loginUser = async() => {
+        loading(true)
+        let Userdata = {
+            email: text,
+            password: password,
+        }
+        await fetch('http://192.168.1.31:3000/api/login', {
+            method: 'POST',
+            headers:{'Content-Type': 'application/json'},
+            body: JSON.stringify(Userdata)
+        }).then((response) => response.json()).then((responseJson) => {
+            console.log(responseJson)
+        }).catch((error) => {
+            console.error(error);
+        }).finally(() => loading(false))
     }
 
     return (

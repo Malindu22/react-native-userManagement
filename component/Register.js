@@ -20,10 +20,27 @@ export default function Register({ navigation }) {
             return;
         }else{
             setError('') 
-            console.log("register")
+            saveRegisterUser()
         }
     }
 
+    const saveRegisterUser = async() => {
+        loading(true)
+        let Userdata = {
+            name: text,
+            email: email,
+            password: password,
+        }
+        await fetch('http://192.168.1.31:3000/api/register', {
+            method: 'POST',
+            headers:{'Content-Type': 'application/json'},
+            body: JSON.stringify(Userdata)
+        }).then((response) => response.json()).then((responseJson) => {
+            console.log(responseJson)
+        }).catch((error) => {
+            console.error(error);
+        }).finally(() => loading(false))
+    }
 
     return (
         <View style={styles.container}>

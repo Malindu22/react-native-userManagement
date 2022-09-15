@@ -12,7 +12,7 @@ export default function HomePage({ navigation }) {
 
     const getUserData = async() => {
         loading(true)
-        await fetch('http://localhost:3000/api/view', {
+        await fetch('http://192.168.1.31:3000/api/view', {
             method: 'GET',
         }).then((response) => response.json()).then((responseJson) => {
             setData(responseJson)
@@ -23,7 +23,7 @@ export default function HomePage({ navigation }) {
     };
 
     const deleteUser = async() => {
-        await fetch('http://localhost:3000/api//delete/'+deleteUserId, {
+        await fetch('http://192.168.1.31:3000/api/delete/'+deleteUserId, {
             method: 'DELETE',
         }).then((response) => response.json()).then((responseJson) => {
             console.log(responseJson)
