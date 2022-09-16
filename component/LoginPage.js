@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from './AuthContext';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Login({ navigation }) {
     const [text, onChangeText] = useState("");
@@ -44,15 +45,28 @@ export default function Login({ navigation }) {
             email: text,
             password: password,
         }
-        await fetch('http://192.168.1.31:3000/api/login', {
+        await fetch('http://localhost:3000/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Userdata)
         }).then((response) => response.json()).then((responseJson) => {
+            // console.log(responseJson)
             if (responseJson.status) {
                 setToken(responseJson.token)
-                console.log("token: ",token)
             }
+            toast(responseJson?.msg, {
+                duration: 1000,
+                icon: '👏',
+                position: 'bottom-center',
+                iconTheme: {
+                    primary: '#000',
+                    secondary: '#fff',
+                },
+                style: {
+                    background: responseJson.status ? 'green' : 'red',
+                    color: 'white'
+                },
+            })
         }).catch((error) => {
             console.error(error);
         }).finally(() => loading(false))
@@ -67,7 +81,7 @@ export default function Login({ navigation }) {
                         style={styles.input}
                         onChangeText={onChangeText}
                         value={text}
-                        placeholder="Name"
+                        placeholder="Email"
                     />
                     <TextInput
                         style={styles.input}

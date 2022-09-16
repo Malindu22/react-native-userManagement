@@ -1,9 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, ToastAndroid, ActivityIndicator } from 'react-native';
 import { NavigationContainer, useRoute } from '@react-navigation/native';
 import { RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function UserPage({ navigation }) {
     const [text, onChangeText] = useState("");
@@ -22,10 +24,10 @@ export default function UserPage({ navigation }) {
             age: age,
             gender: checked == 'male' ? "Male" : "Female"
         }
-        let url = 'http://192.168.1.31:3000/api/add';
+        let url = 'http://localhost:3000/api/add';
         let reqMethod = "POST"
         if (route.params.isEdit) {
-            url = 'http://192.168.1.31:3000/api/update/' + route.params.data._id
+            url = 'http://localhost:3000/api/update/' + route.params.data._id
             reqMethod = "PATCH"
         }
         await fetch(url, {
@@ -33,8 +35,22 @@ export default function UserPage({ navigation }) {
             headers: { 'Content-Type': 'application/json', 'x-access-token': token },
             body: JSON.stringify(Userdata)
         }).then((response) => response.json()).then((responseJson) => {
-            console.log(responseJson)
+            // console.log(responseJson)
+            toast(responseJson?.msg, {
+                duration: 1000,
+                icon: '👏',
+                position: 'bottom-center',
+                iconTheme: {
+                    primary: '#000',
+                    secondary: '#fff',
+                },
+                style: {
+                    background: responseJson.status ? 'green' : 'red',
+                    color: 'white'
+                },
+            })
             navigation.navigate('Home')
+
         }).catch((error) => {
             console.error(error);
         }).finally(() => loading(false))
@@ -43,7 +59,6 @@ export default function UserPage({ navigation }) {
     const getToken = async () => {
         try {
             const value = await AsyncStorage.getItem("TOKEN");
-            console.log("token",value)
             if (value !== null) {
                 setToken(value)
             }

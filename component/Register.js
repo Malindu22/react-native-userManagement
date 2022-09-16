@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
-
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Register({ navigation }) {
     const [text, onChangeText] = useState("");
@@ -24,6 +24,13 @@ export default function Register({ navigation }) {
         }
     }
 
+    const clearInput = () =>{
+        onChangeText('')
+        onChangeEmail('')
+        onChangePassword('')
+        onChangeConPassword('')
+    }
+
     const saveRegisterUser = async() => {
         loading(true)
         let Userdata = {
@@ -31,12 +38,26 @@ export default function Register({ navigation }) {
             email: email,
             password: password,
         }
-        await fetch('http://192.168.1.31:3000/api/register', {
+        await fetch('http://localhost:3000/api/register', {
             method: 'POST',
             headers:{'Content-Type': 'application/json'},
             body: JSON.stringify(Userdata)
         }).then((response) => response.json()).then((responseJson) => {
-            console.log(responseJson)
+            // console.log(responseJson)
+            toast(responseJson?.msg, {
+                duration: 1000,
+                icon: '👏',
+                position: 'bottom-center',
+                iconTheme: {
+                    primary: '#000',
+                    secondary: '#fff',
+                },
+                style: {
+                    background: responseJson.status ? 'green' : 'red',
+                    color: 'white'
+                },
+            })
+            if (responseJson.status) { clearInput() }
         }).catch((error) => {
             console.error(error);
         }).finally(() => loading(false))
@@ -82,6 +103,7 @@ export default function Register({ navigation }) {
                             />
                     }
                     </View>
+                    <Text style={styles.registerText}>Already have an account?  <Text style={styles.clickBtn} onPress={() => navigation.navigate('Login')}>Login Here.</Text></Text>
                 </View>
             </View>
             <StatusBar style="auto" />
@@ -126,5 +148,11 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 13,
         color: '#ff0000'
-    }
+    },
+    registerText: {
+        margin: 15,
+    },
+    clickBtn: {
+        color: "#841584"
+    },
 })

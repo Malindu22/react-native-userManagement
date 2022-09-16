@@ -9,6 +9,8 @@ import Register from './component/Register';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from './component/AuthContext';
+import Toast from 'react-native-toast-message';
+import toast, { Toaster } from 'react-hot-toast';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,7 +34,6 @@ export default function App() {
   };
 
   return (
-    // <HomePage/>
     <AuthContext.Provider value={{ isAuth, setAuth }}>
       <NavigationContainer>
         <Stack.Navigator>
@@ -50,22 +51,9 @@ export default function App() {
           }
         </Stack.Navigator>
       </NavigationContainer>
+      <Toast />
+      <Toaster/>
     </AuthContext.Provider>
-    // <SafeAreaView style={styles.container}>
-    //   <View style={styles.content}>
-    //     <Text style={styles.title}>User Management</Text> 
-    //     <Button
-    //       style={styles.newuserbtn}
-    //       onPress={()=>{}}
-    //       title="Add New User"
-    //       color="#841584"/> 
-    //        {this.DATA.map(d => (<li key={d.title}>{d.title}</li>))} 
-    //         {/* <View style={styles.card}>
-    //           <Text>Hello</Text>
-    //         </View> */}
-    //   </View>
-    //   <StatusBar style="auto" />
-    // </SafeAreaView >
   );
 }
 

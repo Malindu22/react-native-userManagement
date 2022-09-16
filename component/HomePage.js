@@ -4,7 +4,6 @@ import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, Modal, 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 export default function HomePage({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [data, setData] = useState([]);
@@ -12,13 +11,16 @@ export default function HomePage({ navigation }) {
     const [deleteUserId, setDeleteUserId] = useState("");
     const [token, setToken] = useState("");
 
-    const getUserData = async () => {
+    const getUserData = async (tokendata) => {
+        if (tokendata == '') return;
         loading(true)
-        await fetch('http://192.168.1.31:3000/api/view', {
+        await fetch('http://localhost:3000/api/view', {
             method: 'GET',
-            headers: { 'x-access-token': token },
+            headers: { 'x-access-token': tokendata },
         }).then((response) => response.json()).then((responseJson) => {
-            setData(responseJson)
+            if (responseJson.status) {
+                setData(responseJson.data)
+            }
             console.log(responseJson)
         }).catch((error) => {
             console.error(error);
@@ -26,41 +28,66 @@ export default function HomePage({ navigation }) {
     };
 
     const deleteUser = async () => {
-        await fetch('http://192.168.1.31:3000/api/delete/' + deleteUserId, {
+        await fetch('http://localhost:3000/api/delete/' + deleteUserId, {
             method: 'DELETE',
             headers: { 'x-access-token': token },
         }).then((response) => response.json()).then((responseJson) => {
-            console.log(responseJson)
+            // console.log(responseJson)
+            toast(responseJson?.msg, {
+                duration: 1000,
+                icon: '👏',
+                position: 'bottom-center',
+                iconTheme: {
+                    primary: '#000',
+                    secondary: '#fff',
+                },
+                style: {
+                    background: responseJson.status ? 'green' : 'red',
+                    color: 'white'
+                },
+            })
         }).catch((error) => {
             console.error(error);
         }).finally(() => { loading(false); setModalVisible(!modalVisible); getUserData() })
     }
 
-    const getToken = async () => {
-        try {
-            const value = await AsyncStorage.getItem("TOKEN");
-            console.log("token",value)
-            if (value !== null) {
-                setToken(value)
+    const getToken = () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const value = await AsyncStorage.getItem("TOKEN");
+                console.log("token", value)
+                if (value !== null) {
+                    setToken(value)
+                }
+                return resolve({ val: value });
+            } catch (e) {
+                console.log("get token err")
+                return reject({ err: e });
             }
-        } catch (e) {
-            console.log("get token err")
-        }
+        })
     };
 
-    // useEffect(() => {
-    //     const unsubscribe = navigation.addListener('focus', () => {
-    //         getToken();
-    //         getUserData();
-    //     });
-    //     return unsubscribe;
-    // }, [navigation]);
-
     useEffect(() => {
-        console.log('user')
-        getToken();
-        getUserData();
-    }, [token]);
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (token != '') {
+                getUserData(token);
+            } else {
+                getToken().then(succ => {
+                    getUserData(succ.val);
+                }).catch(err => { console.log(err); })
+            }
+        });
+        return unsubscribe;
+    }, [navigation, token]);
+
+    // useEffect(() => {
+    //     getToken();
+    //     getUserData();
+    // }, [token]);
+
+    // useEffect(() => {
+    //     getUserData();
+    // }, [navigation]);
 
     return (
         <SafeAreaView style={styles.container}>
