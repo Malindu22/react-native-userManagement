@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, Modal, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function HomePage({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
