@@ -38,7 +38,7 @@ export default function Register({ navigation }) {
             email: email,
             password: password,
         }
-        await fetch('http://localhost:3000/api/register', {
+        await fetch(global.MainUrl + '/api/register', {
             method: 'POST',
             headers:{'Content-Type': 'application/json'},
             body: JSON.stringify(Userdata)

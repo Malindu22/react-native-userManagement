@@ -24,10 +24,10 @@ export default function UserPage({ navigation }) {
             age: age,
             gender: checked == 'male' ? "Male" : "Female"
         }
-        let url = 'http://localhost:3000/api/add';
+        let url = global.MainUrl + '/api/add';
         let reqMethod = "POST"
         if (route.params.isEdit) {
-            url = 'http://localhost:3000/api/update/' + route.params.data._id
+            url = global.MainUrl + '/api/update/' + route.params.data._id
             reqMethod = "PATCH"
         }
         await fetch(url, {

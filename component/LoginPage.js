@@ -45,7 +45,7 @@ export default function Login({ navigation }) {
             email: text,
             password: password,
         }
-        await fetch('http://localhost:3000/api/login', {
+        await fetch(global.MainUrl + '/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Userdata)

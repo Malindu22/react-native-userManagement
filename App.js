@@ -14,6 +14,8 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const Stack = createNativeStackNavigator();
 
+global.MainUrl = 'http://localhost:3000'
+
 export default function App() {
   const [isAuth, setAuth] = useState(false)
 

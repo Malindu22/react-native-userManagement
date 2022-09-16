@@ -14,7 +14,7 @@ export default function HomePage({ navigation }) {
     const getUserData = async (tokendata) => {
         if (tokendata == '') return;
         loading(true)
-        await fetch('http://localhost:3000/api/view', {
+        await fetch(global.MainUrl + '/api/view', {
             method: 'GET',
             headers: { 'x-access-token': tokendata },
         }).then((response) => response.json()).then((responseJson) => {
@@ -28,7 +28,7 @@ export default function HomePage({ navigation }) {
     };
 
     const deleteUser = async () => {
-        await fetch('http://localhost:3000/api/delete/' + deleteUserId, {
+        await fetch(global.MainUrl + '/api/delete/' + deleteUserId, {
             method: 'DELETE',
             headers: { 'x-access-token': token },
         }).then((response) => response.json()).then((responseJson) => {
