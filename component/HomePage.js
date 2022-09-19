@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, Modal, 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import toast, { Toaster } from 'react-hot-toast';
+import AuthContext from './AuthContext';
 
 export default function HomePage({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
@@ -11,6 +12,8 @@ export default function HomePage({ navigation }) {
     const [isloading, loading] = useState(true);
     const [deleteUserId, setDeleteUserId] = useState("");
     const [token, setToken] = useState("");
+
+    const { isAuth, setAuth } = React.useContext(AuthContext);
 
     const getUserData = async (tokendata) => {
         if (tokendata == '') return;
@@ -81,6 +84,20 @@ export default function HomePage({ navigation }) {
         return unsubscribe;
     }, [navigation, token]);
 
+
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+          headerRight: () => (
+            <Button color="#fb2525" style={{ margin: 5}} onPress={() => logOut()} title="Logout" />
+          ),
+        });
+      }, [navigation]);
+
+      const logOut = () =>{
+        AsyncStorage.setItem("TOKEN",null);
+        setToken('');
+        setAuth(false);
+      }
     // useEffect(() => {
     //     getToken();
     //     getUserData();
