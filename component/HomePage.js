@@ -93,8 +93,13 @@ export default function HomePage({ navigation }) {
         });
       }, [navigation]);
 
-      const logOut = () =>{
-        AsyncStorage.setItem("TOKEN",null);
+      const logOut = async() =>{
+        try {
+            await AsyncStorage.removeItem('TOKEN')
+          } catch(e) {
+            // remove error
+            console.log("Log out error");
+          }
         setToken('');
         setAuth(false);
       }
